@@ -56,10 +56,7 @@ public class ItemService implements ItemServiceInterface {
     @Transactional(rollbackFor = Exception.class)
     public ResponseEntity<?> checkOut(CartItemList itemList) {
         synchronized (this) {
-            itemList.getCartItemList().
-                    forEach(this::validateItem);
-            itemList.getCartItemList().
-                    forEach(this::updateItemQnt);
+            itemList.getCartItemList().forEach(this::updateItemQnt);
         }
         return new ResponseEntity<>(HttpStatus.OK);
     }

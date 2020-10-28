@@ -2,14 +2,13 @@ package com.microserivcepractice.itemservice.controllers;
 
 import com.microserivcepractice.itemservice.controllers.assemblers.ItemAssembler;
 import com.microserivcepractice.itemservice.controllers.services.ItemServiceInterface;
-import com.microserivcepractice.itemservice.controllers.services.impl.ItemService;
 import com.microserivcepractice.itemservice.models.CartItem;
 import com.microserivcepractice.itemservice.models.CartItemList;
+import com.microserivcepractice.itemservice.models.CartWrapper;
 import com.microserivcepractice.itemservice.models.Item;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.Link;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -20,7 +19,6 @@ import javax.validation.constraints.Min;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -30,7 +28,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class ItemController {
 
     private final RestTemplate web;
-    private final ItemService itemService;
+    private final ItemServiceInterface itemService;
     private final ItemAssembler itemAssembler;
 
     @PostMapping("/items")
@@ -71,14 +69,28 @@ public class ItemController {
         return this.itemAssembler.toModel(this.itemService.addToItem(id, qnt));
     }
 
+    // Test methods
+
     @GetMapping("/test/cart")
-    public CollectionModel<EntityModel<CartItem>> getCartItemList() {
+    public CartItemList getCartItemList() {
         List<CartItem> list = new ArrayList<>();
         list.add(new CartItem(1, web.getForObject("http://localhost:8080/items/1", Item.class), 5));
         list.add(new CartItem(2, web.getForObject("http://localhost:8080/items/2", Item.class), 10));
-        return CollectionModel.of(list.stream().map(
-                cart -> EntityModel.of(cart, linkTo(methodOn(ItemController.class).
-                        getCartItemList()).withSelfRel())).collect(Collectors.toList()));
+        return new CartItemList(list);
+    }
+
+    @GetMapping("/test/ssss")
+    public CollectionModel<EntityModel<CartItem>> getCartItem() {
+        List<CartItem> list = new ArrayList<>();
+        list.add(new CartItem(1, web.getForObject("http://localhost:8080/items/1", Item.class), 5));
+        list.add(new CartItem(2, web.getForObject("http://localhost:8080/items/2", Item.class), 10));
+        return CollectionModel.of(list.stream().map(ob -> EntityModel.of(ob,
+                linkTo(methodOn(ItemController.class).getCartItem()).withSelfRel())).collect(Collectors.toList()));
+    }
+
+    @PostMapping("/wrapper/test")
+    public CartWrapper getWrapperClass(@RequestBody CartWrapper cartWrapper) {
+        return cartWrapper;
     }
 
     @PostMapping("/ss")
