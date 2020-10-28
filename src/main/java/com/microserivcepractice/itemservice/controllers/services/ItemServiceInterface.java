@@ -12,7 +12,7 @@ public interface ItemServiceInterface {
 
     Item addItem(Item item);
 
-    Item addToItem(int id, int qnt);
+    Item addToItem(Item item);
 
     ResponseEntity<?> deleteItem(int id);
 
@@ -20,5 +20,7 @@ public interface ItemServiceInterface {
 
     ResponseEntity<?> checkOut(CartItemList cartItemList);
 
-    Boolean getValidation(int id, int qnt);
+    Item getValidatedItem(int id, int qnt);
+
+    List<Item> getItemsWithQntGreaterOrEqual(int qnt);
 }

@@ -13,5 +13,5 @@ import lombok.Setter;
 public class HateoasWrapper<T> {
 
     @JsonProperty("_embedded")
-    private T wrapperClass;
+    private T wrappedClass;
 }

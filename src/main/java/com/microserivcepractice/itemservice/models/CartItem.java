@@ -1,5 +1,6 @@
 package com.microserivcepractice.itemservice.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,6 +27,7 @@ public class CartItem {
     @Min(0)
     private int qnt;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     public int getPrice() {
         return this.qnt * this.item.getPrice();
     }

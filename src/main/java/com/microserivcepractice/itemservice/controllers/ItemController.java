@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,15 +42,12 @@ public class ItemController {
 
     @GetMapping("/items")
     public CollectionModel<EntityModel<Item>> getItems() {
-        return itemAssembler.toCollectionModel(itemService.getItems());
+        return itemAssembler.toCollectionModel(itemService.getItemsWithQntGreaterOrEqual(0));
     }
 
-    @GetMapping("/cart")
-    public EntityModel<CartItem> getCart() {
-        Item item = web.getForObject("http://localhost:8080/items/1",
-                Item.class);
-        return EntityModel.of(new CartItem(1, item, 10),
-                linkTo(methodOn(this.getClass()).getCart()).withSelfRel());
+    @GetMapping("/items/all")
+    public CollectionModel<EntityModel<Item>> getAllItems() {
+        return itemAssembler.toCollectionModel(itemService.getItems());
     }
 
     @DeleteMapping("/items/{id}")
@@ -60,13 +56,13 @@ public class ItemController {
     }
 
     @PutMapping("/items/checkout")
-    public ResponseEntity<?> checkOut(@RequestBody @Valid CartItemList cartItemList) {
-        return this.itemService.checkOut(cartItemList);
+    public ResponseEntity<?> checkOut(@RequestBody @Valid HateoasWrapper<CartItemList> cartItemList) {
+        return this.itemService.checkOut(cartItemList.getWrappedClass());
     }
 
-    @PutMapping("/items/{id}")
-    public EntityModel<Item> addToItem(@PathVariable("id") int id, @RequestParam @Min(1) int qnt) {
-        return this.itemAssembler.toModel(this.itemService.addToItem(id, qnt));
+    @PatchMapping("/items/{id}")
+    public EntityModel<Item> addToItem(@RequestBody Item item) {
+        return this.itemAssembler.toModel(this.itemService.addToItem(item));
     }
 
     // Test methods

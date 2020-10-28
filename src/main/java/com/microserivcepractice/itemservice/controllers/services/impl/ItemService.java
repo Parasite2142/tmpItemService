@@ -22,6 +22,7 @@ public class ItemService implements ItemServiceInterface {
     private final ItemRepository itemRepository;
     private static final String NOT_FOUND_MSG = "Item not found id = ";
 
+
     public Item getItem(int id) {
         return itemRepository.findById(id).orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MSG + id));
@@ -31,24 +32,32 @@ public class ItemService implements ItemServiceInterface {
         return itemRepository.findAll();
     }
 
-    public Item addItem(Item item) {
-        return itemRepository.save(item);
+    public List<Item> getItemsWithQntGreaterOrEqual(int qnt) {
+        return this.itemRepository.findAllByStockGreaterThanEqual(qnt);
     }
 
-    public Item addToItem(int id, int qnt) {
+    public Item addItem(Item item) {
         synchronized (this) {
-            Item item = this.itemRepository.findById(id).orElseThrow(
+            return itemRepository.save(item);
+        }
+    }
+
+    public Item addToItem(Item item) {
+        synchronized (this) {
+            Item updatableItem = this.itemRepository.findById(item.getId()).orElseThrow(
                     () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-            item.setStock(item.getStock() + qnt);
+            updatableItem.setStock(updatableItem.getStock() + item.getStock());
             return this.itemRepository.save(item);
         }
     }
 
     public ResponseEntity<?> deleteItem(int id) {
         synchronized (this) {
-            itemRepository.findById(id).orElseThrow(() ->
-                    new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MSG + id));
-            itemRepository.deleteById(id);
+            Item deleteItem = this.itemRepository.findById(id).
+                    orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                            NOT_FOUND_MSG + id));
+            deleteItem.setStock(0);
+            itemRepository.save(deleteItem);
         }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -61,18 +70,6 @@ public class ItemService implements ItemServiceInterface {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    public Boolean getValidation(int id, int qnt) {
-        return this.itemRepository.validateQntById(id, qnt).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MSG + id));
-    }
-
-    private void validateItem(CartItem cartItem) {
-        if (!this.getValidation(cartItem.getItem().getId(), cartItem.getQnt())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Not enough items in the storage item id = " + cartItem.getItem().getId());
-        }
-    }
-
     private void updateItemQnt(CartItem cartItem) {
         if (this.itemRepository.updateItem(
                 cartItem.getItem().getId(),
@@ -81,4 +78,16 @@ public class ItemService implements ItemServiceInterface {
                     "Not enough items of id = " + cartItem.getItem().getId());
         }
     }
+
+    public Item getValidatedItem(int id, int qnt) {
+        Item item = this.itemRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        String.format("Item with id = %d doesn't exist", id)));
+        if (item.getStock() - qnt < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "not enough items in the stock item id = " + id);
+        }
+        return item;
+    }
+    
 }
