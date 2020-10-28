@@ -4,7 +4,7 @@ import com.microserivcepractice.itemservice.controllers.assemblers.ItemAssembler
 import com.microserivcepractice.itemservice.controllers.services.ItemServiceInterface;
 import com.microserivcepractice.itemservice.models.CartItem;
 import com.microserivcepractice.itemservice.models.CartItemList;
-import com.microserivcepractice.itemservice.models.CartWrapper;
+import com.microserivcepractice.itemservice.models.HateoasWrapper;
 import com.microserivcepractice.itemservice.models.Item;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
@@ -80,7 +80,7 @@ public class ItemController {
     }
 
     @GetMapping("/test/ssss")
-    public CollectionModel<EntityModel<CartItem>> getCartItem() {
+    public CollectionModel<? extends EntityModel<?>> getCartItem() {
         List<CartItem> list = new ArrayList<>();
         list.add(new CartItem(1, web.getForObject("http://localhost:8080/items/1", Item.class), 5));
         list.add(new CartItem(2, web.getForObject("http://localhost:8080/items/2", Item.class), 10));
@@ -89,12 +89,8 @@ public class ItemController {
     }
 
     @PostMapping("/wrapper/test")
-    public CartWrapper getWrapperClass(@RequestBody CartWrapper cartWrapper) {
+    public HateoasWrapper<CartItemList> getWrapperClass(@RequestBody HateoasWrapper<CartItemList> cartWrapper) {
         return cartWrapper;
     }
 
-    @PostMapping("/ss")
-    public CartItemList postGetItems(@RequestBody CartItemList cartItems) {
-        return web.getForObject("http://localhost:8080/test/cart", CartItemList.class);
-    }
 }
