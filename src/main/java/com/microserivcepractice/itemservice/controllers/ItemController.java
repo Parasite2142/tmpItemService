@@ -42,7 +42,7 @@ public class ItemController {
 
     @GetMapping("/items")
     public CollectionModel<EntityModel<Item>> getItems() {
-        return itemAssembler.toCollectionModel(itemService.getItemsWithQntGreaterOrEqual(0));
+        return itemAssembler.toCollectionModel(itemService.getItemsWithQntGreaterOrEqual(1));
     }
 
     @GetMapping("/items/all")
